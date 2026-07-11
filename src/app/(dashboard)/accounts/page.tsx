@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Bank } from "@prisma/client";
 import { AccountsManager } from "@/app/(dashboard)/accounts/AccountsManager";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -33,12 +34,12 @@ export default async function AccountsPage() {
             where: { id: session.user.bankId },
             orderBy: { name: "asc" },
           })
-        : Promise.resolve([]),
+        : Promise.resolve<Bank[]>([]),
   ]);
 
   return (
     <AccountsManager
-      banks={banks.map((bank) => ({
+      banks={banks.map((bank: Bank) => ({
         id: bank.id,
         name: bank.name,
       }))}

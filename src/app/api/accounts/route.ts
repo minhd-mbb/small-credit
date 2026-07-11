@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import type { Bank } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +36,7 @@ export async function GET() {
     }),
     session.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve([]),
+      : Promise.resolve<Bank[]>([]),
   ]);
 
   return NextResponse.json({

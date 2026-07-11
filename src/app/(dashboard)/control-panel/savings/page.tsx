@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Bank } from "@prisma/client";
 import { SavingsManagement } from "@/app/(dashboard)/control-panel/savings/SavingsManagement";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -28,7 +29,7 @@ export default async function SavingsManagementPage() {
     }),
     session.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve([]),
+      : Promise.resolve<Bank[]>([]),
   ]);
 
   const systemBaseRate = await prisma.systemSavingBaseRate.findUnique({

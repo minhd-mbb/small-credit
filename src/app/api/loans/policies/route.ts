@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Bank } from "@prisma/client";
 import { logActivity } from "@/lib/activity-log";
 import { auth } from "@/lib/auth";
 import {
@@ -32,7 +33,7 @@ export async function GET() {
     }),
     session?.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve([]),
+      : Promise.resolve<Bank[]>([]),
     prisma.systemLoanBaseRate.findFirst(),
   ]);
 
