@@ -1,10 +1,18 @@
 import { redirect } from "next/navigation";
-import type { ActivityLog } from "@prisma/client";
 import { AccountLogsTable } from "@/app/(dashboard)/account/logs/AccountLogsTable";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+type ActivityLogRecord = {
+  id: string;
+  action: string;
+  time: Date;
+  functionName: string;
+  beforeChange: unknown;
+  afterChange: unknown;
+};
 
 export default async function AccountLogsPage() {
   const session = await auth();
@@ -47,7 +55,7 @@ export default async function AccountLogsPage() {
         </Card>
       ) : (
         <AccountLogsTable
-          logs={logs.map((log: ActivityLog) => ({
+          logs={logs.map((log: ActivityLogRecord) => ({
             id: log.id,
             action: log.action,
             time: log.time.toLocaleString("vi-VN"),
