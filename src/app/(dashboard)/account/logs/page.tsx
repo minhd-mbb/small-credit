@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { ActivityLog } from "@prisma/client";
 import { AccountLogsTable } from "@/app/(dashboard)/account/logs/AccountLogsTable";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -46,7 +47,7 @@ export default async function AccountLogsPage() {
         </Card>
       ) : (
         <AccountLogsTable
-          logs={logs.map((log) => ({
+          logs={logs.map((log: ActivityLog) => ({
             id: log.id,
             action: log.action,
             time: log.time.toLocaleString("vi-VN"),
