@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { Bank } from "@prisma/client";
 import { logActivity } from "@/lib/activity-log";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +11,8 @@ import {
   SYSTEM_SAVING_BASE_RATE_ID,
 } from "@/lib/savings-policy";
 import { savingInterestPolicySchema } from "@/lib/validations";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 
 function canManageSavings(role?: string) {
   return role === "ADMIN" || role === "BANK_ADMIN";
@@ -101,7 +102,7 @@ export async function GET() {
     }),
     session?.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve<Bank[]>([]),
+      : Promise.resolve<BankRecord[]>([]),
     prisma.systemSavingBaseRate.findUnique({
       where: { id: SYSTEM_SAVING_BASE_RATE_ID },
     }),

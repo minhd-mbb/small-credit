@@ -13,6 +13,7 @@ description: Pre-build validation rule to guarantee code compiles perfectly unde
 * Annotate callback parameters in `map`, `filter`, `reduce`, and similar array helpers when the source array has conditional or inferred types.
 * Avoid allowing `Promise.resolve([])` to infer `any[]`; always wrap with an explicit model type or known value type.
 * If a response value may be returned from multiple promise branches, ensure all branches resolve to the same typed array shape.
+* Avoid direct model type imports from `@prisma/client` root exports for build-critical code; prefer derived types from actual client calls like `Awaited<ReturnType<typeof prisma.bank.findMany>>[number]` or explicit local record shapes.
 
 ### 2. Linting & Next.js Constraints
 * Run `next lint` or equivalent framework linters.

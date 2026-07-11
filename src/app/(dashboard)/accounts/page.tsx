@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import type { Bank } from "@prisma/client";
 import { AccountsManager } from "@/app/(dashboard)/accounts/AccountsManager";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 
 export default async function AccountsPage() {
   const session = await auth();
@@ -34,12 +35,12 @@ export default async function AccountsPage() {
             where: { id: session.user.bankId },
             orderBy: { name: "asc" },
           })
-        : Promise.resolve<Bank[]>([]),
+        : Promise.resolve<BankRecord[]>([]),
   ]);
 
   return (
     <AccountsManager
-      banks={banks.map((bank: Bank) => ({
+      banks={banks.map((bank: BankRecord) => ({
         id: bank.id,
         name: bank.name,
       }))}

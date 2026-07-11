@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { Bank } from "@prisma/client";
 import { logActivity } from "@/lib/activity-log";
 import { auth } from "@/lib/auth";
 import {
@@ -8,6 +7,8 @@ import {
 } from "@/lib/loans-service";
 import { prisma } from "@/lib/prisma";
 import { loanInterestPolicySchema } from "@/lib/validations";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 
 function canManageLoans(role?: string) {
   return role === "ADMIN" || role === "BANK_ADMIN";
@@ -33,7 +34,7 @@ export async function GET() {
     }),
     session?.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve<Bank[]>([]),
+      : Promise.resolve<BankRecord[]>([]),
     prisma.systemLoanBaseRate.findFirst(),
   ]);
 

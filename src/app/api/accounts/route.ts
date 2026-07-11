@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
-import type { Bank } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { accountUserCreateSchema } from "@/lib/validations";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 
 function canManageAccounts(role?: string) {
   return role === "ADMIN" || role === "BANK_ADMIN";
@@ -36,7 +37,7 @@ export async function GET() {
     }),
     session.user.role === "ADMIN"
       ? prisma.bank.findMany({ orderBy: { name: "asc" } })
-      : Promise.resolve<Bank[]>([]),
+      : Promise.resolve<BankRecord[]>([]),
   ]);
 
   return NextResponse.json({
