@@ -41,3 +41,16 @@ NEXTAUTH_URL="http://localhost:3001"
 AUTH_URL="http://localhost:3001"
 AUTH_TRUST_HOST="true"
 rồi build/restart lại.
+
+## Deploy to Vercel + Supabase
+1. Tạo một project Supabase và import file SQL `backup_small_credit_supabase_clean.sql` vào database.
+2. Trên Vercel, cấu hình biến môi trường theo `.env.example`.
+3. Đặt `NEXTAUTH_URL` và `AUTH_URL` bằng domain Vercel của bạn, ví dụ `https://your-app.vercel.app`.
+4. Dùng `DATABASE_URL` trỏ tới Supabase Postgres.
+5. Dùng `NEXTAUTH_SECRET` và `AUTH_SECRET` mạnh.
+
+### Authentication
+- App hiện tại dùng `next-auth` Credentials login với bảng `User` trong database.
+- Với Vercel + Supabase, bạn có thể giữ nguyên `next-auth` và chỉ đổi `DATABASE_URL` sang Supabase Postgres.
+- Quan trọng: trên Vercel hãy set `NEXTAUTH_SECRET` / `AUTH_SECRET` đủ mạnh và đảm bảo `NEXTAUTH_URL` trùng khớp domain deploy.
+- Nếu bạn muốn một bước nâng cao hơn sau này, Supabase Auth vẫn là lựa chọn, nhưng không bắt buộc với quy mô nhỏ.
