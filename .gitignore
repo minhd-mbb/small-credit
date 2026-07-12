@@ -60,3 +60,5 @@ Desktop.ini
 tmp/
 temp/
 
+# .env files
+.env.local
