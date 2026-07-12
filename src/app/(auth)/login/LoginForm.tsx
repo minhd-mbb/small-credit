@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, Hash, Lock } from "lucide-react";
 import supabase from "@/lib/supabaseClient";
+import { resolveLoginEmail } from "@/lib/login-identity";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
@@ -19,6 +20,8 @@ export function LoginForm() {
     username: string;
     fullName: string;
   } | null>(null);
+  const [touchedUsername, setTouchedUsername] = useState(false);
+  const [identityError, setIdentityError] = useState("");
 
   function showAlert(message: string) {
     setAlertMessage(message);
@@ -52,16 +55,14 @@ export function LoginForm() {
     setAlertMessage("");
     setMessage("");
 
-    if (!/^\d{4,10}$/.test(username)) {
+    const email = resolveLoginEmail(username);
+
+    if (!email) {
       showAlert(`User ${username} sai username hoặc mật khẩu. Mời kiểm tra lại`);
       return;
     }
 
     setIsPending(true);
-
-    const email = username.includes("@")
-      ? username
-      : `${username}@small-credit.internal`;
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -74,16 +75,16 @@ export function LoginForm() {
       const statusResponse = await fetch("/api/auth/account-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: email }),
       });
       const statusPayload = await statusResponse.json();
 
       if (statusPayload.data?.inactive) {
-        showAlert(`User ${username} cần liên hệ Quản trị ngân hàng để activate`);
+        showAlert(`User ${email} cần liên hệ Quản trị ngân hàng để activate`);
         return;
       }
 
-      showAlert(`User ${username} sai username hoặc mật khẩu. Mời kiểm tra lại`);
+      showAlert(`User ${email} sai username hoặc mật khẩu. Mời kiểm tra lại`);
       return;
     }
 
@@ -98,15 +99,17 @@ export function LoginForm() {
     setMessage("");
     setForgotPreview(null);
 
-    if (!/^\d{4,10}$/.test(username)) {
-      showAlert("Nhập username trước khi yêu cầu reset mật khẩu.");
+    const email = resolveLoginEmail(username);
+
+    if (!email) {
+      showAlert("Nhập email hoặc username trước khi yêu cầu reset mật khẩu.");
       return;
     }
 
     const response = await fetch("/api/auth/forgot-password/lookup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ username: email }),
     });
     const payload = await response.json();
 
@@ -156,16 +159,29 @@ export function LoginForm() {
           <input
             autoComplete="username"
             className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
-            inputMode="numeric"
-            maxLength={10}
-            pattern="[0-9]{4,10}"
-            placeholder="1505"
+            inputMode="email"
+            maxLength={100}
+            placeholder="1505 or user@example.com"
             type="text"
             value={username}
-            onChange={(event) =>
-              setUsername(event.target.value.replace(/\D/g, ""))
-            }
+            onChange={(event) => {
+              const v = event.target.value;
+              setUsername(v);
+              if (!touchedUsername) setTouchedUsername(true);
+
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+              if (v.includes("@")) {
+                setIdentityError(emailRegex.test(v) ? "" : "Email không hợp lệ.");
+              } else {
+                setIdentityError(/^\d{4,10}$/.test(v) ? "" : "Username phải là 4-10 chữ số.");
+              }
+            }}
+            onBlur={() => setTouchedUsername(true)}
           />
+        {touchedUsername && identityError ? (
+          <p className="mt-2 text-sm font-medium text-red-600">{identityError}</p>
+        ) : null}
         </div>
       </label>
 

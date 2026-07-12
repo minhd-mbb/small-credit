@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Admin",
@@ -12,7 +12,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export default async function AccountPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

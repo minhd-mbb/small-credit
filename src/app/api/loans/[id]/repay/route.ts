@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { accrueLoanUntilToday } from "@/lib/loans-service";
 import { prisma } from "@/lib/prisma";
 import { loanRepaymentSchema } from "@/lib/validations";
@@ -12,7 +12,7 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (session?.user.role !== "ACCOUNT") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

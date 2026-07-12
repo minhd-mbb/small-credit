@@ -2,7 +2,7 @@ import { ArrowDownRight, ArrowUpRight, ListChecks, WalletCards } from "lucide-re
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { getAccountDashboardSnapshot } from "@/lib/account-dashboard-cache";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 const formatVnd = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 0,
@@ -21,7 +21,7 @@ function formatCompact(value: number) {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

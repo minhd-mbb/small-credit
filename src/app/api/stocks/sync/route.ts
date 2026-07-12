@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import {
   crawlStockQuoteWithPlaywright,
@@ -96,7 +96,7 @@ async function saveRawLogs({
 }
 
 export async function POST() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== "ACCOUNT") {
     return forbidden();

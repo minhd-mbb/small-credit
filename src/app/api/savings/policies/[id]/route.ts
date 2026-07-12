@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import {
   isBankPolicyRateAllowed,
@@ -57,7 +57,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageSavings(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -231,7 +231,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageSavings(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

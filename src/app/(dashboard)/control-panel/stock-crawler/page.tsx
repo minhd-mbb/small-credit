@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { StockCrawlerSettings } from "@/app/(dashboard)/control-panel/stock-crawler/StockCrawlerSettings";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_STOCK_CRAWLER_SETTING } from "@/lib/stock-playwright-crawler";
 
 export default async function StockCrawlerSettingsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

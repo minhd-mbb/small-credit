@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { bankUpdateSchema } from "@/lib/validations";
@@ -13,7 +13,7 @@ function normalizeCode(code: string) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (session?.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_STOCK_CRAWLER_SETTING } from "@/lib/stock-playwright-crawler";
 import { stockCrawlerSettingSchema } from "@/lib/validations";
@@ -9,7 +9,7 @@ function forbidden() {
 }
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== "BANK_ADMIN" || !session.user.bankId) {
     return forbidden();
@@ -33,7 +33,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== "BANK_ADMIN" || !session.user.bankId) {
     return forbidden();

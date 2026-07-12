@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { LoansClient } from "@/app/(dashboard)/loans/LoansClient";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { accrueActiveLoansForUser } from "@/lib/loans-service";
 import { prisma } from "@/lib/prisma";
 
 export default async function LoansPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

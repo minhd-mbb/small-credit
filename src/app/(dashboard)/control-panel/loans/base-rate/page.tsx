@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { BaseLoanRateManagement } from "@/app/(dashboard)/control-panel/loans/base-rate/BaseLoanRateManagement";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { SYSTEM_LOAN_BASE_RATE_ID } from "@/lib/loan-policy";
 import { prisma } from "@/lib/prisma";
 
 export default async function BaseLoanRatePage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

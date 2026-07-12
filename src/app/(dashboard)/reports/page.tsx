@@ -2,10 +2,10 @@ import { Download, FileText } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 export default async function ReportsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/Card";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 type LoanDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function LoanDetailPage({ params }: LoanDetailPageProps) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

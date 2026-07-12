@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import {
   getMaxLoanBankBaseRate,
   getMaxLoanTermRate,
@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { loanBaseRateSchema } from "@/lib/validations";
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (session?.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -37,7 +37,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (session?.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { DepositForm } from "@/app/(dashboard)/control-panel/deposits/DepositForm";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 export default async function DepositsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

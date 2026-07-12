@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 type TransferInDetail = {
@@ -51,7 +51,7 @@ function readTransferDetail(value: unknown): TransferInDetail {
 }
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

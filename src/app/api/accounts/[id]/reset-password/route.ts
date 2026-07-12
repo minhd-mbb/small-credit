@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { resetPasswordSchema } from "@/lib/validations";
@@ -21,7 +21,7 @@ function generatePassword() {
 }
 
 async function canManageUser(id: string) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || (session.user.role !== "ADMIN" && session.user.role !== "BANK_ADMIN")) {
     return { allowed: false as const, session, user: null };

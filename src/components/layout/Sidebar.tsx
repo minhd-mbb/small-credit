@@ -19,7 +19,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import supabase from "@/lib/supabaseClient";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { formatCompactVnd } from "@/lib/money-format";
@@ -161,7 +161,9 @@ export function Sidebar({
   const isAdminRole = user.role === "ADMIN" || user.role === "BANK_ADMIN";
 
   async function handleLogout() {
-    await signOut({ callbackUrl: "/login" });
+    await supabase.auth.signOut();
+    // router not available here; use location change
+    window.location.href = "/login";
   }
 
   function toggleControlPanel() {

@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { AccountLogsTable } from "@/app/(dashboard)/account/logs/AccountLogsTable";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 type ActivityLogRecord = {
@@ -16,7 +16,7 @@ type ActivityLogRecord = {
 };
 
 export default async function AccountLogsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

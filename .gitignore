@@ -59,6 +59,3 @@ Desktop.ini
 .turbo/
 tmp/
 temp/
-
-# .env files
-.env.local

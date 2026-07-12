@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { StockInvestmentsClient } from "@/app/(dashboard)/stock-investments/StockInvestmentsClient";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 export default async function StockInvestmentsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

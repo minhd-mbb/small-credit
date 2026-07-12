@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { MoneyTransferForm } from "@/app/(dashboard)/account/money-management/MoneyTransferForm";
 import { SpendMoneyForm } from "@/app/(dashboard)/account/money-management/SpendMoneyForm";
 import { Card } from "@/components/ui/Card";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { formatCompactVnd } from "@/lib/money-format";
 import { prisma } from "@/lib/prisma";
 
@@ -12,7 +12,7 @@ function decimalToNumber(value: { toString(): string } | null | undefined) {
 }
 
 export default async function MoneyManagementPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

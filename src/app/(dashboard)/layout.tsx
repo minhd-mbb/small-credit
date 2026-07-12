@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { accrueActiveLoansForUser } from "@/lib/loans-service";
 import { prisma } from "@/lib/prisma";
 import { accrueActiveSavingsForUser } from "@/lib/savings-service";
@@ -10,7 +10,7 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

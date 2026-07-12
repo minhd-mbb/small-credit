@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { ensureBankFund, ensureSystemFund } from "@/lib/funds-service";
 import { prisma } from "@/lib/prisma";
 import { fundTransactionSchema } from "@/lib/validations";
@@ -26,7 +26,7 @@ function readTargetBankId(
 }
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageFunds(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -88,7 +88,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageFunds(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

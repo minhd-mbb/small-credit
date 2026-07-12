@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 
 const roleLabels = {
   ADMIN: "Admin",
@@ -99,7 +99,7 @@ const controlPanelItems = {
 };
 
 export default async function ControlPanelPage() {
-  const session = await auth();
+  const session = await getServerSession();
   const role = session?.user.role ?? "ACCOUNT";
 
   if (role === "ACCOUNT") {

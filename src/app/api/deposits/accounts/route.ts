@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 function canDeposit(role?: string) {
@@ -7,7 +7,7 @@ function canDeposit(role?: string) {
 }
 
 export async function GET(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canDeposit(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import { stockWatchlistUpdateSchema } from "@/lib/validations";
 
@@ -11,7 +11,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== "ACCOUNT") {
     return forbidden();
@@ -51,7 +51,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== "ACCOUNT") {
     return forbidden();

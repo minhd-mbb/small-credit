@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { usernameSchema } from "@/lib/validations";
+import { resolveLoginEmail } from "@/lib/login-identity";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const username = usernameSchema.safeParse(body.username);
+  const email = resolveLoginEmail(String(body.username ?? ""));
 
-  if (!username.success) {
+  if (!email) {
     return NextResponse.json({ data: { inactive: false } });
   }
 
   const user = await prisma.user.findUnique({
-    where: { username: username.data },
+    where: { email },
     select: { isActive: true },
   });
 

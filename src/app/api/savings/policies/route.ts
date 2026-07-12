@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import {
   getMaxBankBasicRate,
@@ -83,7 +83,7 @@ function resolvePolicyRate({
 }
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageSavings(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -151,7 +151,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageSavings(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

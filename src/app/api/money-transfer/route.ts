@@ -2,12 +2,12 @@ import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import { transferSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

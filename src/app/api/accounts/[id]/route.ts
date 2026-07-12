@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import type { Session } from "next-auth";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { accountUserUpdateSchema } from "@/lib/validations";
@@ -13,7 +12,10 @@ function canManageAccounts(role?: string) {
   return role === "ADMIN" || role === "BANK_ADMIN";
 }
 
-async function getManageableUser(id: string, session: Session) {
+async function getManageableUser(
+  id: string,
+  session: { user: { role: string; bankId?: string | null; id?: string } } | null,
+) {
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
@@ -36,7 +38,7 @@ async function getManageableUser(id: string, session: Session) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || !canManageAccounts(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -144,7 +146,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || !canManageAccounts(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

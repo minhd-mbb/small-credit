@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { FundsManagement } from "@/app/(dashboard)/control-panel/funds/FundsManagement";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { ensureBankFund, ensureSystemFund } from "@/lib/funds-service";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
@@ -9,7 +9,7 @@ type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 type FundRecord = Prisma.FundGetPayload<{ include: { bank: true } }>;
 
 export default async function FundsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

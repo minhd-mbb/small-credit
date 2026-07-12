@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { SavingsClient } from "@/app/(dashboard)/savings/SavingsClient";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import {
   accrueActiveSavingsForUser,
@@ -10,7 +10,7 @@ import {
 } from "@/lib/savings-service";
 
 export default async function SavingsPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

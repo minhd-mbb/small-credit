@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import {
   normalizeLoanBankBaseRate,
   normalizeLoanTermRate,
@@ -17,7 +17,7 @@ function canManageLoans(role?: string) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageLoans(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -130,7 +130,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canManageLoans(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

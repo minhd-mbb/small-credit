@@ -1,32 +1,32 @@
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
-import { usernameSchema } from "@/lib/validations";
+import { resolveLoginEmail } from "@/lib/login-identity";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const username = usernameSchema.safeParse(body.username);
+  const email = resolveLoginEmail(String(body.username ?? ""));
 
-  if (!username.success) {
+  if (!email) {
     return NextResponse.json(
-      { error: "Username must contain 4-10 digits." },
+      { error: "Email or username is invalid." },
       { status: 400 },
     );
   }
 
   const user = await prisma.user.findUnique({
-    where: { username: username.data },
-    select: { resetPasswordRequested: true },
+    where: { email },
+    select: { resetPasswordRequested: true, username: true },
   });
 
   await prisma.user.updateMany({
-    where: { username: username.data },
+    where: { email },
     data: { resetPasswordRequested: true },
   });
 
   if (user) {
     await logActivity({
-      username: username.data,
+      username: user.username,
       action: "REQUEST_PASSWORD_RESET",
       functionName: "General",
       beforeChange: { resetPasswordRequested: user.resetPasswordRequested },

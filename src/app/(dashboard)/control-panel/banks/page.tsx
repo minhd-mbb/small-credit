@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { BankManagement } from "@/app/(dashboard)/control-panel/banks/BankManagement";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 export default async function BankManagementPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 
 function canUseDepositPicker(role?: string) {
@@ -18,7 +18,7 @@ function readLimit(value: string | null) {
 }
 
 export async function GET(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

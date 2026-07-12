@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { LoanManagement } from "@/app/(dashboard)/control-panel/loans/LoanManagement";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
@@ -8,7 +8,7 @@ type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
 type LoanPolicyRecord = Prisma.LoanInterestPolicyGetPayload<{ include: { bank: true } }>;
 
 export default async function LoanManagementPage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");

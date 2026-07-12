@@ -1,6 +1,7 @@
-import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createSupabaseServerClient } from "./src/lib/supabaseServer";
+import { prisma } from "./src/lib/prisma";
 
 const ADMIN_ROUTES = ["/admin", "/api/admin"];
 const BANK_ADMIN_ROUTES = ["/loans", "/pledges", "/overdrafts", "/accounts"];
@@ -19,23 +20,34 @@ function debugLog(...args: unknown[]) {
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  });
-  const role = isAppRole(token?.role) ? token.role : undefined;
+  const response = NextResponse.next();
 
-  debugLog("request", pathname, "token", token, "role", role);
+  // Create a Supabase server client that can read cookies from the request
+  const supabase = createSupabaseServerClient(req, response as unknown as NextResponse);
 
-  if (!token && !AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    debugLog("redirect to /login because no token and not auth route");
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session ?? null;
+
+  let role: "ADMIN" | "BANK_ADMIN" | "ACCOUNT" | undefined;
+
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (user) {
+      role = isAppRole(user.role) ? user.role : undefined;
+    }
+  }
+
+  debugLog("request", pathname, "session", !!session, "role", role);
+
+  if (!session && !AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+    debugLog("redirect to /login because no session and not auth route");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (token && pathname === "/login") {
+  if (session && pathname === "/login") {
     if (!role) {
-      debugLog("token present but invalid role, allow /login to render");
-      return NextResponse.next();
+      debugLog("session present but invalid role, allow /login to render");
+      return response;
     }
 
     const target = role === "ACCOUNT" ? "/dashboard" : "/control-panel";
@@ -43,8 +55,8 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(target, req.url));
   }
 
-  if (!role && token && pathname !== "/login") {
-    debugLog("redirect to /login because token exists but role invalid or missing");
+  if (!role && session && pathname !== "/login") {
+    debugLog("redirect to /login because session exists but role invalid or missing");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -65,14 +77,11 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  if (
-    ADMIN_ROUTES.some((route) => pathname.startsWith(route)) &&
-    role !== "ADMIN"
-  ) {
+  if (ADMIN_ROUTES.some((route) => pathname.startsWith(route)) && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

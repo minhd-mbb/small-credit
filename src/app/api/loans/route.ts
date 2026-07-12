@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { logActivity } from "@/lib/activity-log";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { ensureBankFund } from "@/lib/funds-service";
 import {
   accrueActiveLoansForUser,
@@ -19,7 +19,7 @@ function canCreateLoan(role?: string) {
 }
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -67,7 +67,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!canCreateLoan(session?.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -8,7 +8,7 @@ import {
   PanelRightOpen,
   Settings,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import supabase from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -61,7 +61,8 @@ export function FloatingCommandMenu({
 
   async function handleLogout() {
     setOpen(false);
-    await signOut({ callbackUrl: "/login" });
+    await supabase.auth.signOut();
+    router.push("/login");
   }
 
   return (

@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { BaseSavingRateManagement } from "@/app/(dashboard)/control-panel/savings/base-rate/BaseSavingRateManagement";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/serverSession";
 import { prisma } from "@/lib/prisma";
 import { SYSTEM_SAVING_BASE_RATE_ID } from "@/lib/savings-policy";
 
 export default async function BaseSavingRatePage() {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session) {
     redirect("/login");
