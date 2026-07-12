@@ -14,7 +14,7 @@ function canManageAccounts(role?: string) {
 
 async function getManageableUser(
   id: string,
-  session: { user: { role: string; bankId?: string | null; id?: string } } | null,
+  session: { user: { role: string; bankId?: string | null; id?: string } },
 ) {
   const user = await prisma.user.findUnique({ where: { id } });
 

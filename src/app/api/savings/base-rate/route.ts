@@ -183,7 +183,7 @@ export async function PATCH(request: Request) {
   });
 }
 
-        const session = await getServerSession();
+function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 

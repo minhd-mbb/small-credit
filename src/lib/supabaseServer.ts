@@ -29,8 +29,7 @@ function parseCookieHeader(cookieHeader: string | null | undefined) {
 
 function cookiesFromRequest(req: NextRequest) {
   // Some runtimes expose req.cookies.getAll(), otherwise parse header
-  // @ts-expect-error - runtime shape may vary
-  if (typeof req.cookies?.getAll === "function") {
+  if (typeof (req as any).cookies?.getAll === "function") {
     // Map from { name, value } or NextRequestCookie to plain object
     return req.cookies.getAll().map((cookie: any) => ({
       name: cookie.name,
@@ -45,9 +44,8 @@ async function cookiesFromHeaders() {
   // Prefer the cookies() helper when it exposes getAll, otherwise read raw header
   try {
     const c: any = await cookies();
-    // @ts-expect-error - runtime shape may vary
-    if (typeof c?.getAll === "function") {
-      const all = await c.getAll();
+    if (typeof (c as any)?.getAll === "function") {
+      const all = await (c as any).getAll();
       return all.map((cookie: any) => ({ name: cookie.name, value: cookie.value }));
     }
   } catch (e) {
