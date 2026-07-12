@@ -4,25 +4,50 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 type TransferInDetail = {
-  amount?: unknown;
-  accountNo?: unknown;
+  amount?: string;
+  accountNo?: string;
   from?: {
-    accountNo?: unknown;
-    fullName?: unknown;
-    bankName?: unknown;
+    accountNo?: string;
+    fullName?: string;
+    bankName?: string;
   };
 };
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 function readString(value: unknown) {
   return typeof value === "string" ? value : "";
 }
 
-function readTransferDetail(value: Prisma.JsonValue): TransferInDetail {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+function readTransferDetail(value: unknown): TransferInDetail {
+  if (!isPlainRecord(value)) {
     return {};
   }
 
-  return value as TransferInDetail;
+  const detail: TransferInDetail = {};
+
+  if (typeof value.amount === "string") {
+    detail.amount = value.amount;
+  }
+
+  if (typeof value.accountNo === "string") {
+    detail.accountNo = value.accountNo;
+  }
+
+  if (isPlainRecord(value.from)) {
+    detail.from = {
+      accountNo:
+        typeof value.from.accountNo === "string" ? value.from.accountNo : undefined,
+      fullName:
+        typeof value.from.fullName === "string" ? value.from.fullName : undefined,
+      bankName:
+        typeof value.from.bankName === "string" ? value.from.bankName : undefined,
+    };
+  }
+
+  return detail;
 }
 
 export async function GET() {

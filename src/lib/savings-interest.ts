@@ -20,7 +20,7 @@ type EarlyWithdrawalInput = {
 export function isStandardSavingTerm(
   termMonths: number,
 ): termMonths is StandardSavingTerm {
-  return STANDARD_SAVING_TERMS.includes(termMonths as StandardSavingTerm);
+  return STANDARD_SAVING_TERMS.some((term) => term === termMonths);
 }
 
 export function calculateDailySavingInterest({

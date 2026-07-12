@@ -16,6 +16,12 @@ import { Card } from "@/components/ui/Card";
 
 type Role = "ADMIN" | "BANK_ADMIN" | "ACCOUNT";
 
+const roles: Role[] = ["ADMIN", "BANK_ADMIN", "ACCOUNT"];
+
+function isRole(value: string): value is Role {
+  return roles.some((role) => role === value);
+}
+
 type ManagedAccount = {
   id: string;
   username: string;
@@ -317,12 +323,18 @@ export function AccountsManager({
               className="mt-2 h-10 w-full rounded-[var(--radius-btn)] border border-[var(--border-card)] bg-white px-3 text-sm font-semibold outline-none focus:border-[var(--primary)] disabled:bg-gray-50"
               disabled={!canChooseRole}
               value={form.role}
-              onChange={(event) =>
+              onChange={(event) => {
+                const nextRole = event.target.value;
+
+                if (!isRole(nextRole)) {
+                  return;
+                }
+
                 setForm((value) => ({
                   ...value,
-                  role: event.target.value as Role,
-                }))
-              }
+                  role: nextRole,
+                }));
+              }}
             >
               <option value="ACCOUNT">Account</option>
               <option value="BANK_ADMIN">Bank admin</option>
@@ -419,13 +431,19 @@ export function AccountsManager({
               <select
                 className="h-10 rounded-[var(--radius-btn)] border border-[var(--border-card)] bg-white px-3 text-sm font-semibold outline-none focus:border-[var(--primary)]"
                 value={resetState.mode}
-                onChange={(event) =>
+                onChange={(event) => {
+                  const nextMode = event.target.value;
+
+                  if (nextMode !== "random" && nextMode !== "custom") {
+                    return;
+                  }
+
                   setResetState((value) =>
                     value
-                      ? { ...value, mode: event.target.value as ResetState["mode"] }
+                      ? { ...value, mode: nextMode }
                       : value,
-                  )
-                }
+                  );
+                }}
               >
                 <option value="random">Random password</option>
                 <option value="custom">Custom password</option>

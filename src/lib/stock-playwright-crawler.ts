@@ -92,8 +92,12 @@ function readString(record: Record<string, unknown>, keys: string[]) {
   return null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function collectObjects(value: unknown, output: Record<string, unknown>[] = []) {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value) && !Array.isArray(value)) {
     return output;
   }
 
@@ -105,7 +109,7 @@ function collectObjects(value: unknown, output: Record<string, unknown>[] = []) 
     return output;
   }
 
-  output.push(value as Record<string, unknown>);
+  output.push(value);
 
   for (const nested of Object.values(value).slice(0, 80)) {
     collectObjects(nested, output);

@@ -4,8 +4,10 @@ import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { accountUserCreateSchema } from "@/lib/validations";
+import type { Prisma } from "@prisma/client";
 
 type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
+type UserRecord = Prisma.UserGetPayload<{ include: { bank: true } }>;
 
 function canManageAccounts(role?: string) {
   return role === "ADMIN" || role === "BANK_ADMIN";
@@ -29,7 +31,7 @@ export async function GET() {
         ? { bankId: session.user.bankId }
         : { id: session.user.id };
 
-  const [users, banks] = await Promise.all([
+  const [users, banks]: [UserRecord[], BankRecord[]] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: [{ role: "asc" }, { username: "asc" }],
@@ -41,7 +43,7 @@ export async function GET() {
   ]);
 
   return NextResponse.json({
-    data: users.map((user) => ({
+    data: users.map((user: UserRecord) => ({
       id: user.id,
       username: user.username,
       fullName: user.fullName,

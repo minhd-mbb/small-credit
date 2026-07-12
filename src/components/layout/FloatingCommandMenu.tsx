@@ -28,7 +28,7 @@ export function FloatingCommandMenu({
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) {
+      if (!menuRef.current?.contains(event.target instanceof Node ? event.target : null)) {
         setOpen(false);
       }
     }

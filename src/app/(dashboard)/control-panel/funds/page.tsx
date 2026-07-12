@@ -3,6 +3,10 @@ import { FundsManagement } from "@/app/(dashboard)/control-panel/funds/FundsMana
 import { auth } from "@/lib/auth";
 import { ensureBankFund, ensureSystemFund } from "@/lib/funds-service";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
+type FundRecord = Prisma.FundGetPayload<{ include: { bank: true } }>;
 
 export default async function FundsPage() {
   const session = await auth();
@@ -15,7 +19,7 @@ export default async function FundsPage() {
     redirect("/dashboard");
   }
 
-  const banks =
+  const banks: BankRecord[] =
     session.user.role === "ADMIN"
       ? await prisma.bank.findMany({ orderBy: { name: "asc" } })
       : session.user.bankId
@@ -30,7 +34,7 @@ export default async function FundsPage() {
     await ensureBankFund(bank.id);
   }
 
-  const funds =
+  const funds: FundRecord[] =
     session.user.role === "ADMIN"
       ? await prisma.fund.findMany({
           include: { bank: true },

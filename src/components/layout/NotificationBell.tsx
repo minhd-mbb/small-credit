@@ -61,7 +61,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
+      if (!wrapperRef.current?.contains(event.target instanceof Node ? event.target : null)) {
         setOpen(false);
       }
     }

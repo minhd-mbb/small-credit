@@ -63,6 +63,8 @@ const policyDescriptions: Record<PolicyType, string> = {
     "Lãi suất thưởng do bank admin áp dụng cho các khoản tiết kiệm đang hoạt động.",
 };
 
+const policyTypes: PolicyType[] = ["BASIC", "PERIOD", "PROMOTIONAL"];
+
 function getDefaultPolicyType(role: "ADMIN" | "BANK_ADMIN"): PolicyType {
   return role === "ADMIN" ? "PERIOD" : "BASIC";
 }
@@ -348,12 +350,18 @@ export function SavingsManagement({
               className="mt-2 h-11 w-full rounded-xl border border-[var(--border-card)] bg-white px-3 text-sm font-semibold outline-none focus:border-[var(--primary)] disabled:bg-[var(--primary-light)]"
               disabled={isEditing && form.type === "BASIC"}
               value={form.type}
-              onChange={(event) =>
+              onChange={(event) => {
+                const nextType = event.target.value;
+
+                if (nextType !== "BASIC" && nextType !== "PERIOD" && nextType !== "PROMOTIONAL") {
+                  return;
+                }
+
                 setForm((value) => ({
                   ...value,
-                  type: event.target.value as PolicyType,
-                }))
-              }
+                  type: nextType,
+                }));
+              }}
             >
               {availablePolicyTypes.map((value) => (
                 <option key={value} value={value}>
@@ -472,7 +480,7 @@ export function SavingsManagement({
         ) : null}
       </Card>
 
-      {(Object.keys(policyLabels) as PolicyType[]).map((type) => {
+      {policyTypes.map((type) => {
         const group = policies.filter((policy) => policy.type === type);
 
         return (

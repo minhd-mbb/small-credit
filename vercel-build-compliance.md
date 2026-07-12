@@ -24,6 +24,16 @@ description: Pre-build validation rule to guarantee code compiles perfectly unde
 * Confirm any required process.env variables are accounted for locally or mocked.
 * Inform the user immediately if a newly introduced variable needs to be added to the Vercel Dashboard.
 
+# Vercel Deployment Compliance Rules
+
+Mỗi khi viết code cho tôi, bạn phải tuân thủ nghiêm ngặt các quy tắc biên dịch của Vercel:
+1. KHÔNG được sử dụng kiểu dữ liệu 'any' bừa bãi trong TypeScript. Hãy viết rõ Type/Interface.
+2. KHÔNG để các ký tự như (', ", <, >) đứng trơ trọi trong JSX/HTML. Phải bọc chúng trong {' '} hoặc dùng thực thể HTML (ví dụ: &apos; thay cho dấu nháy đơn).
+3. Đảm bảo tất cả các component/file được import phải viết ĐÚNG CHÍNH TÁC từng chữ hoa, chữ thường (Vercel phân biệt chữ hoa chữ thường, Localhost thì không).
+4. Nhắc nhở tôi nếu có biến môi trường (process.env) nào chưa được khai báo.
+5. hãy định nghĩa interface cho các object và không dùng any
+
+
 ### 4. Verification Step
 * Before completing a coding task, simulate the environment locally by running:
   `vercel build`

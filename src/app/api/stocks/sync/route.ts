@@ -15,10 +15,52 @@ function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
-function toJsonValue(value: unknown) {
-  return value === null || value === undefined
-    ? Prisma.JsonNull
-    : (value as Prisma.InputJsonValue);
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function toJsonValue(
+  value: unknown,
+  topLevel: true,
+): Prisma.InputJsonValue | typeof Prisma.JsonNull;
+function toJsonValue(
+  value: unknown,
+  topLevel?: false,
+): Prisma.InputJsonValue | null;
+function toJsonValue(
+  value: unknown,
+  topLevel = true,
+): Prisma.InputJsonValue | typeof Prisma.JsonNull | null {
+  if (value === null || value === undefined) {
+    return topLevel ? Prisma.JsonNull : null;
+  }
+
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => toJsonValue(item, false)) as Prisma.InputJsonArray;
+  }
+
+  if (isPlainRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [key, toJsonValue(nested, false)]),
+    ) as Prisma.InputJsonObject;
+  }
+
+  return String(value);
+}
+
+function toJsonInputValue(
+  value: unknown,
+): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  const converted = toJsonValue(value, true);
+  return converted === null ? Prisma.JsonNull : converted;
 }
 
 async function saveRawLogs({
@@ -44,7 +86,7 @@ async function saveRawLogs({
       contentType: log.contentType,
       extracted: log.extracted,
       pageUrl,
-      raw: toJsonValue(log.raw),
+      raw: toJsonInputValue(log.raw),
       responseUrl: log.responseUrl,
       status: log.status,
       symbol,
@@ -117,7 +159,7 @@ export async function POST() {
           changePercent: result.quote.changePercent,
           companyName: result.quote.companyName,
           price: result.quote.price,
-          raw: toJsonValue(result.quote.raw),
+          raw: toJsonInputValue(result.quote.raw),
           source: "PLAYWRIGHT",
           syncedAt: now,
         },
@@ -125,7 +167,7 @@ export async function POST() {
           changePercent: result.quote.changePercent,
           companyName: result.quote.companyName,
           price: result.quote.price,
-          raw: toJsonValue(result.quote.raw),
+          raw: toJsonInputValue(result.quote.raw),
           source: "PLAYWRIGHT",
           symbol: result.quote.symbol,
           syncedAt: now,

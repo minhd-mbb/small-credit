@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import { LoanManagement } from "@/app/(dashboard)/control-panel/loans/LoanManagement";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+
+type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
+type LoanPolicyRecord = Prisma.LoanInterestPolicyGetPayload<{ include: { bank: true } }>;
 
 export default async function LoanManagementPage() {
   const session = await auth();
@@ -19,7 +23,7 @@ export default async function LoanManagementPage() {
       ? { bankId: session.user.bankId ?? "__missing_bank__" }
       : {};
 
-  const [policies, banks] = await Promise.all([
+  const [policies, banks]: [LoanPolicyRecord[], BankRecord[]] = await Promise.all([
     prisma.loanInterestPolicy.findMany({
       where,
       include: { bank: true },

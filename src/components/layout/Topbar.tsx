@@ -4,7 +4,7 @@ import { CalendarDays, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 
-const titles: Record<string, { title: string; subtitle: string }> = {
+const titles = {
   "/dashboard": {
     title: "Dashboard",
     subtitle: "06 Jun 2026 / weekly operating view",
@@ -79,8 +79,11 @@ const titles: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
+type TitlePath = keyof typeof titles;
+
 function getTitle(pathname: string) {
-  const key = Object.keys(titles)
+  const keys = Object.keys(titles) as TitlePath[];
+  const key = keys
     .sort((a, b) => b.length - a.length)
     .find((path) => pathname === path || pathname.startsWith(`${path}/`));
 

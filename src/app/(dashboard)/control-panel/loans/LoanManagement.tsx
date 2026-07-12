@@ -233,7 +233,15 @@ export function LoanManagement({
               className="mt-2 h-11 w-full rounded-xl border border-[var(--border-card)] bg-white px-3 text-sm font-semibold outline-none focus:border-[var(--primary)] disabled:bg-[var(--primary-light)]"
               disabled={isEditingPolicy && type === "BASIC"}
               value={type}
-              onChange={(event) => setType(event.target.value as PolicyType)}
+              onChange={(event) => {
+                const nextType = event.target.value;
+
+                if (nextType !== "BASIC" && nextType !== "TERM") {
+                  return;
+                }
+
+                setType(nextType);
+              }}
             >
               {role === "BANK_ADMIN" ? <option value="BASIC">Cơ bản bank</option> : null}
               <option value="TERM">Theo kỳ hạn</option>

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { AccountLogsTable } from "@/app/(dashboard)/account/logs/AccountLogsTable";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -10,8 +11,8 @@ type ActivityLogRecord = {
   action: string;
   time: Date;
   functionName: string;
-  beforeChange: unknown;
-  afterChange: unknown;
+  beforeChange: Prisma.JsonValue;
+  afterChange: Prisma.JsonValue;
 };
 
 export default async function AccountLogsPage() {

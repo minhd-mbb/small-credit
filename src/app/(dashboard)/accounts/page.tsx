@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { AccountsManager } from "@/app/(dashboard)/accounts/AccountsManager";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
+type UserRecord = Prisma.UserGetPayload<{ include: { bank: true } }>;
 
 export default async function AccountsPage() {
   const session = await auth();
@@ -22,7 +24,7 @@ export default async function AccountsPage() {
   const where =
     session.user.role === "ADMIN" ? {} : { bankId: session.user.bankId };
 
-  const [users, banks] = await Promise.all([
+  const [users, banks]: [UserRecord[], BankRecord[]] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: [{ role: "asc" }, { username: "asc" }],
@@ -48,7 +50,7 @@ export default async function AccountsPage() {
         role: session.user.role,
         bankId: session.user.bankId,
       }}
-      initialAccounts={users.map((user) => ({
+      initialAccounts={users.map((user: UserRecord) => ({
         id: user.id,
         username: user.username,
         fullName: user.fullName,

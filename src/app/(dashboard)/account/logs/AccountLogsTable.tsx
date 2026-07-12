@@ -1,5 +1,6 @@
 "use client";
 
+import type { Prisma } from "@prisma/client";
 import { useState } from "react";
 import { Fragment } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -10,15 +11,15 @@ type ActivityLogRow = {
   action: string;
   time: string;
   functionName: string;
-  beforeChange: unknown;
-  afterChange: unknown;
+  beforeChange: Prisma.JsonValue;
+  afterChange: Prisma.JsonValue;
 };
 
 type AccountLogsTableProps = {
   logs: ActivityLogRow[];
 };
 
-function formatChange(value: unknown) {
+function formatChange(value: Prisma.JsonValue) {
   if (value === null || value === undefined) {
     return "";
   }
@@ -26,7 +27,7 @@ function formatChange(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-function ChangeBlock({ label, value }: { label: string; value: unknown }) {
+function ChangeBlock({ label, value }: { label: string; value: Prisma.JsonValue }) {
   const detail = formatChange(value);
 
   return (

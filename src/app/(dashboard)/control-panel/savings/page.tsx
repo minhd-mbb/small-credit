@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { SavingsManagement } from "@/app/(dashboard)/control-panel/savings/SavingsManagement";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { SYSTEM_SAVING_BASE_RATE_ID } from "@/lib/savings-policy";
 
 type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
+type SavingPolicyRecord = Prisma.SavingInterestPolicyGetPayload<{ include: { bank: true } }>;
 
 export default async function SavingsManagementPage() {
   const session = await auth();
@@ -22,7 +24,7 @@ export default async function SavingsManagementPage() {
       ? { bankId: session.user.bankId ?? "__missing_bank__" }
       : {};
 
-  const [policies, banks] = await Promise.all([
+  const [policies, banks]: [SavingPolicyRecord[], BankRecord[]] = await Promise.all([
     prisma.savingInterestPolicy.findMany({
       where,
       include: { bank: true },
