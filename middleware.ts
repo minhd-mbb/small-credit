@@ -7,23 +7,30 @@ const BANK_ADMIN_ROUTES = ["/loans", "/pledges", "/overdrafts", "/accounts"];
 const AUTH_ROUTES = ["/login", "/api/auth"];
 const HIDDEN_UI_ROUTES = ["/pledges", "/overdrafts"];
 
+function normalizeRole(value: unknown) {
+  return value === "ADMIN" || value === "BANK_ADMIN" || value === "ACCOUNT"
+    ? value
+    : "ACCOUNT";
+}
+
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   });
+  const role = token ? normalizeRole(token.role) : undefined;
 
   if (!token && !AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (token && pathname === "/login") {
-    const target = token.role === "ACCOUNT" ? "/dashboard" : "/control-panel";
+    const target = role === "ACCOUNT" ? "/dashboard" : "/control-panel";
     return NextResponse.redirect(new URL(target, req.url));
   }
 
-  if (token?.role !== "ACCOUNT" && pathname.startsWith("/dashboard")) {
+  if (role !== "ACCOUNT" && pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/control-panel", req.url));
   }
 
@@ -32,7 +39,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   if (
-    token?.role === "ACCOUNT" &&
+    role === "ACCOUNT" &&
     BANK_ADMIN_ROUTES.some((route) => pathname.startsWith(route)) &&
     pathname.includes("/manage")
   ) {
@@ -41,7 +48,7 @@ export default async function middleware(req: NextRequest) {
 
   if (
     ADMIN_ROUTES.some((route) => pathname.startsWith(route)) &&
-    token?.role !== "ADMIN"
+    role !== "ADMIN"
   ) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
