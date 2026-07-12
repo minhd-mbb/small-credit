@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, Hash, Lock } from "lucide-react";
-import { signIn } from "next-auth/react";
+import supabase from "@/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
@@ -59,16 +59,18 @@ export function LoginForm() {
 
     setIsPending(true);
 
-    const result = await signIn("credentials", {
-      username,
+    const email = username.includes("@")
+      ? username
+      : `${username}@small-credit.internal`;
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
       password,
-      redirect: false,
-      callbackUrl: searchParams.get("callbackUrl") ?? "/dashboard",
     });
 
     setIsPending(false);
 
-    if (!result?.ok) {
+    if (error || !data?.user) {
       const statusResponse = await fetch("/api/auth/account-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,7 +87,9 @@ export function LoginForm() {
       return;
     }
 
-    router.push(result.url ?? "/dashboard");
+    // Successful login — navigate to callback or dashboard
+    const callback = searchParams.get("callbackUrl") ?? "/dashboard";
+    router.push(callback);
     router.refresh();
   }
 
