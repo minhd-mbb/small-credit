@@ -4,12 +4,10 @@ import { prisma } from "./prisma";
 export async function getServerSession() {
   const supabase = createSupabaseServerClientFromHeaders();
 
-  const { data } = await supabase.auth.getSession();
-  const session = data?.session ?? null;
+  const { data, error } = await supabase.auth.getUser();
+  const email = data.user?.email;
 
-  if (!session?.user?.email) return null;
-
-  const email = session.user.email;
+  if (error || !email) return null;
 
   const user = await prisma.user.findUnique({ where: { email }, include: { bank: true } });
 

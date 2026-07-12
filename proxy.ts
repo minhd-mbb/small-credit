@@ -18,33 +18,33 @@ function debugLog(...args: unknown[]) {
   }
 }
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const response = NextResponse.next();
 
   // Create a Supabase server client that can read cookies from the request
-  const supabase = createSupabaseServerClient(req, response as unknown as NextResponse);
+  const supabase = createSupabaseServerClient(req, response);
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const session = sessionData?.session ?? null;
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+  const authenticatedUser = authError ? null : userData.user;
 
   let role: "ADMIN" | "BANK_ADMIN" | "ACCOUNT" | undefined;
 
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (authenticatedUser?.email) {
+    const user = await prisma.user.findUnique({ where: { email: authenticatedUser.email } });
     if (user) {
       role = isAppRole(user.role) ? user.role : undefined;
     }
   }
 
-  debugLog("request", pathname, "session", !!session, "role", role);
+  debugLog("request", pathname, "session", !!authenticatedUser, "role", role);
 
-  if (!session && !AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+  if (!authenticatedUser && !AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     debugLog("redirect to /login because no session and not auth route");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (session && pathname === "/login") {
+  if (authenticatedUser && pathname === "/login") {
     if (!role) {
       debugLog("session present but invalid role, allow /login to render");
       return response;
@@ -55,7 +55,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(target, req.url));
   }
 
-  if (!role && session && pathname !== "/login") {
+  if (!role && authenticatedUser && pathname !== "/login") {
     debugLog("redirect to /login because session exists but role invalid or missing");
     return NextResponse.redirect(new URL("/login", req.url));
   }

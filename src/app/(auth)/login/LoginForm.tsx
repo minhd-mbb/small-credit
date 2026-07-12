@@ -6,6 +6,7 @@ import supabase from "@/lib/supabaseClient";
 import { resolveLoginEmail } from "@/lib/login-identity";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { deriveSupabasePassword } from "@/lib/supabase-password";
 
 export function LoginForm() {
   const router = useRouter();
@@ -64,10 +65,21 @@ export function LoginForm() {
 
     setIsPending(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const syncResponse = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
+    const supabasePassword = syncResponse.ok
+      ? await deriveSupabasePassword(password)
+      : null;
+
+    const { data, error } = supabasePassword
+      ? await supabase.auth.signInWithPassword({
+      email,
+          password: supabasePassword,
+        })
+      : { data: { user: null }, error: new Error("Login synchronization failed") };
 
     setIsPending(false);
 
@@ -89,7 +101,10 @@ export function LoginForm() {
     }
 
     // Successful login — navigate to callback or dashboard
-    const callback = searchParams.get("callbackUrl") ?? "/dashboard";
+    const requestedCallback = searchParams.get("callbackUrl");
+    const callback = requestedCallback?.startsWith("/") && !requestedCallback.startsWith("//")
+      ? requestedCallback
+      : "/dashboard";
     router.push(callback);
     router.refresh();
   }
