@@ -1,6 +1,12 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import {
+  formatCanonicalVndAmount,
+  parseLocalizedVndAmount,
+  roundVndAmount,
+} from "@/lib/money-input";
 
 type MoneyAmountInputProps = {
   label?: string;
@@ -10,20 +16,10 @@ type MoneyAmountInputProps = {
 };
 
 const STEP = 10_000;
-const formatter = new Intl.NumberFormat("vi-VN");
 
-function normalizeDigits(value: string) {
-  return value.replace(/\D/g, "");
-}
-
-function formatAmount(value: string) {
-  const digits = normalizeDigits(value);
-
-  if (!digits) {
-    return "";
-  }
-
-  return formatter.format(Number(digits));
+interface AmountInputState {
+  canonicalValue: string;
+  displayValue: string;
 }
 
 export function MoneyAmountInput({
@@ -32,11 +28,26 @@ export function MoneyAmountInput({
   onChange,
   value,
 }: MoneyAmountInputProps) {
-  const numericValue = Number(normalizeDigits(value) || 0);
+  const [inputState, setInputState] = useState<AmountInputState>(() => ({
+    canonicalValue: value,
+    displayValue: formatCanonicalVndAmount(value),
+  }));
+  const displayValue =
+    inputState.canonicalValue === value
+      ? inputState.displayValue
+      : formatCanonicalVndAmount(value);
+  const numericValue = Number(value || 0);
 
   function updateAmount(nextValue: number) {
     const clamped = Math.min(Math.max(nextValue, 0), max);
-    onChange(clamped > 0 ? String(clamped) : "");
+    const rounded = roundVndAmount(clamped);
+    const canonicalValue = rounded > 0 ? String(rounded) : "";
+
+    setInputState({
+      canonicalValue,
+      displayValue: formatCanonicalVndAmount(canonicalValue),
+    });
+    onChange(canonicalValue);
   }
 
   return (
@@ -47,12 +58,28 @@ export function MoneyAmountInput({
       <div className="mt-2 flex h-11 items-center overflow-hidden rounded-xl border border-[var(--border-card)] bg-white transition-all focus-within:border-[var(--primary)]">
         <input
           className="min-w-0 flex-1 bg-transparent px-3 text-sm font-semibold text-[var(--text-primary)] outline-none"
-          inputMode="numeric"
+          inputMode="decimal"
           placeholder="0"
-          value={formatAmount(value)}
+          value={displayValue}
           onChange={(event) => {
-            const digits = normalizeDigits(event.target.value);
-            updateAmount(Number(digits || 0));
+            const parsedAmount = parseLocalizedVndAmount(event.target.value);
+
+            if (!parsedAmount) {
+              setInputState({ canonicalValue: "", displayValue: "" });
+              onChange("");
+              return;
+            }
+
+            if (parsedAmount.numericValue > max) {
+              updateAmount(max);
+              return;
+            }
+
+            setInputState({
+              canonicalValue: parsedAmount.canonicalValue,
+              displayValue: parsedAmount.displayValue,
+            });
+            onChange(parsedAmount.canonicalValue);
           }}
         />
         <div className="flex h-full w-8 flex-col border-l border-[var(--border-card)]">

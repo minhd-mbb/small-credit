@@ -30,7 +30,7 @@ export default async function AccountPage() {
           {user.fullName}
         </h1>
         <p className="mt-1 text-sm font-semibold text-[var(--text-secondary)]">
-          Username {user.username}
+          Email {user.email}
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export default async function AccountPage() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase text-[var(--text-muted)]">
-                Username
+                Email
               </p>
               <p className="mt-1 text-base font-bold text-[var(--text-primary)]">
                 {user.username}

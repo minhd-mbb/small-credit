@@ -23,31 +23,34 @@ const bank = await prisma.bank.upsert({
 
 const seedUsers = [
   {
-    username: "0983171982",
+    email: "minhd.mbb@gmail.com",
     fullName: "System Admin",
     role: "ADMIN",
   },
   {
-    username: "0922076868",
+    email: "giang.mbbank@gmail.com",
     fullName: "Bank Admin",
     role: "BANK_ADMIN",
   },
   {
-    username: "1505",
-    fullName: "Account 1505",
+    email: "benpoddle@gmail.com",
+    accountNo: "1505",
+    fullName: "Account Member",
     role: "ACCOUNT",
   },
   {
-    username: "1403",
-    fullName: "Account 1403",
+    email: "bicorgi@gmail.com",
+    accountNo: "1403",
+    fullName: "Account Member",
     role: "ACCOUNT",
   },
 ];
 
 for (const user of seedUsers) {
   const savedUser = await prisma.user.upsert({
-    where: { username: user.username },
+    where: { email: user.email },
     update: {
+      username: user.email,
       fullName: user.fullName,
       role: user.role,
       bankId: bank.id,
@@ -55,7 +58,8 @@ for (const user of seedUsers) {
       isActive: true,
     },
     create: {
-      username: user.username,
+      username: user.email,
+      email: user.email,
       fullName: user.fullName,
       role: user.role,
       bankId: bank.id,
@@ -65,15 +69,19 @@ for (const user of seedUsers) {
   });
 
   if (user.role === "ACCOUNT") {
+    if (!user.accountNo) {
+      throw new Error(`Missing account number for ${user.email}`);
+    }
+
     await prisma.account.upsert({
-      where: { accountNo: user.username },
+      where: { accountNo: user.accountNo },
       update: {
         userId: savedUser.id,
         bankId: bank.id,
         status: "ACTIVE",
       },
       create: {
-        accountNo: user.username,
+        accountNo: user.accountNo,
         userId: savedUser.id,
         bankId: bank.id,
       },

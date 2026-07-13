@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowRight, Eye, EyeOff, Hash, Lock } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import supabase from "@/lib/supabaseClient";
 import { resolveLoginEmail } from "@/lib/login-identity";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -167,30 +167,26 @@ export function LoginForm() {
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
       <label className="block">
         <span className="text-xs font-bold text-[var(--text-secondary)]">
-          Username
+          Email
         </span>
         <div className="mt-2 flex h-11 items-center gap-2 rounded-[var(--radius-btn)] border border-[var(--border-card)] bg-white px-3 transition-all focus-within:border-[var(--primary)] focus-within:shadow-[0_0_0_3px_rgba(26,92,46,0.12)]">
-          <Hash size={16} className="text-[var(--text-muted)]" />
+          <Mail size={16} className="text-[var(--text-muted)]" />
           <input
             autoComplete="username"
             className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
             inputMode="email"
             maxLength={100}
-            placeholder="1505 or user@example.com"
-            type="text"
+            placeholder="user@example.com"
+            type="email"
             value={username}
             onChange={(event) => {
-              const v = event.target.value;
+              const v = event.target.value.toLowerCase();
               setUsername(v);
               if (!touchedUsername) setTouchedUsername(true);
 
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
-              if (v.includes("@")) {
-                setIdentityError(emailRegex.test(v) ? "" : "Email không hợp lệ.");
-              } else {
-                setIdentityError(/^\d{4,10}$/.test(v) ? "" : "Username phải là 4-10 chữ số.");
-              }
+              setIdentityError(emailRegex.test(v) ? "" : "Email không hợp lệ.");
             }}
             onBlur={() => setTouchedUsername(true)}
           />
@@ -282,7 +278,7 @@ export function LoginForm() {
           </h3>
           <div className="mt-4 space-y-2 rounded-xl bg-[var(--primary-light)] p-3">
             <p className="text-sm font-bold text-[var(--text-primary)]">
-              Username: {forgotPreview.username}
+              Email: {forgotPreview.username}
             </p>
             <p className="text-sm font-bold text-[var(--text-primary)]">
               Full name: {forgotPreview.fullName}

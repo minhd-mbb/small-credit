@@ -56,8 +56,7 @@ export default async function LoginPage() {
               Login
             </h2>
             <p className="mt-2 text-sm font-medium text-[var(--text-secondary)]">
-              Use your numeric username and password. Sessions expire after 60
-              minutes.
+              Use your email and password. Sessions expire after 60 minutes.
             </p>
           </div>
 

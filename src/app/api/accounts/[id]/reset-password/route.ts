@@ -4,6 +4,7 @@ import { getServerSession } from "@/lib/serverSession";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { resetPasswordSchema } from "@/lib/validations";
+import { updateSupabaseUserPassword } from "@/lib/supabase-user-admin";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -62,6 +63,22 @@ export async function POST(request: Request, context: RouteContext) {
   const password =
     payload.data.mode === "random" ? generatePassword() : payload.data.password!;
   const passwordHash = await bcrypt.hash(password, 12);
+
+  if (!access.user.email) {
+    return NextResponse.json(
+      { error: "The account does not have a Supabase email." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    await updateSupabaseUserPassword(access.user.email, password);
+  } catch {
+    return NextResponse.json(
+      { error: "Supabase authentication password could not be updated." },
+      { status: 502 },
+    );
+  }
 
   await prisma.user.update({
     where: { id },

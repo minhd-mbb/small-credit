@@ -4,6 +4,7 @@ import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "@/lib/serverSession";
 import { accountUserCreateSchema } from "@/lib/validations";
+import { createSupabaseUser } from "@/lib/supabase-user-admin";
 import type { Prisma } from "@prisma/client";
 
 type BankRecord = Awaited<ReturnType<typeof prisma.bank.findMany>>[number];
@@ -45,7 +46,7 @@ export async function GET() {
   return NextResponse.json({
     data: users.map((user: UserRecord) => ({
       id: user.id,
-      username: user.username,
+      username: user.email ?? user.username,
       fullName: user.fullName,
       role: user.role,
       bankId: user.bankId,
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: {
         username: payload.data.username,
+        email: payload.data.username,
         fullName: payload.data.fullName,
         role,
         bankId,
@@ -116,6 +118,23 @@ export async function POST(request: Request) {
       },
       include: { bank: true },
     });
+
+    try {
+      await createSupabaseUser(payload.data.username, password, {
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+      });
+    } catch {
+      await prisma.$transaction([
+        prisma.account.deleteMany({ where: { userId: user.id } }),
+        prisma.user.delete({ where: { id: user.id } }),
+      ]);
+      return NextResponse.json(
+        { error: "Supabase authentication account could not be created." },
+        { status: 502 },
+      );
+    }
 
     await logActivity({
       username: session.user.username,
@@ -149,7 +168,7 @@ export async function POST(request: Request) {
     );
   } catch {
     return NextResponse.json(
-      { error: "Username already exists or account could not be created." },
+      { error: "Email already exists or account could not be created." },
       { status: 409 },
     );
   }

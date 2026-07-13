@@ -32,7 +32,7 @@ export default async function proxy(req: NextRequest) {
 
   if (authenticatedUser?.email) {
     const user = await prisma.user.findUnique({ where: { email: authenticatedUser.email } });
-    if (user) {
+    if (user?.isActive) {
       role = isAppRole(user.role) ? user.role : undefined;
     }
   }

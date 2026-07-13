@@ -3,6 +3,10 @@ import { getServerSession } from "@/lib/serverSession";
 import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { accountUserUpdateSchema } from "@/lib/validations";
+import {
+  deleteSupabaseUser,
+  updateSupabaseUser,
+} from "@/lib/supabase-user-admin";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -75,12 +79,35 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 
+  const nextEmail = payload.data.username ?? currentUser.email;
+
+  if (!currentUser.email || !nextEmail) {
+    return NextResponse.json(
+      { error: "A valid email is required for Supabase authentication." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    await updateSupabaseUser(currentUser.email, nextEmail, {
+      fullName: payload.data.fullName ?? currentUser.fullName,
+      role,
+      isActive: payload.data.isActive ?? currentUser.isActive,
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Supabase authentication account could not be updated." },
+      { status: 502 },
+    );
+  }
+
   try {
     const updated = await prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
         where: { id },
         data: {
           username: payload.data.username,
+          email: payload.data.username,
           fullName: payload.data.fullName,
           role,
           bankId,
@@ -138,6 +165,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     });
   } catch {
+    await updateSupabaseUser(nextEmail, currentUser.email, {
+      fullName: currentUser.fullName,
+      role: currentUser.role,
+      isActive: currentUser.isActive,
+    }).catch(() => undefined);
+
     return NextResponse.json(
       { error: "Account could not be updated." },
       { status: 409 },
@@ -167,13 +200,36 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Account not found" }, { status: 404 });
   }
 
+  if (!currentUser.email) {
+    return NextResponse.json(
+      { error: "The account does not have a Supabase email." },
+      { status: 400 },
+    );
+  }
+
   try {
     await prisma.$transaction([
       prisma.session.deleteMany({ where: { userId: id } }),
       prisma.account.deleteMany({ where: { userId: id } }),
       prisma.user.delete({ where: { id } }),
     ]);
+  } catch {
+    return NextResponse.json(
+      { error: "Account has related financial records and cannot be deleted." },
+      { status: 409 },
+    );
+  }
 
+  try {
+    await deleteSupabaseUser(currentUser.email);
+  } catch {
+    return NextResponse.json(
+      { error: "Local account was deleted, but Supabase cleanup failed." },
+      { status: 502 },
+    );
+  }
+
+  try {
     await logActivity({
       username: session.user.username,
       action: "DELETE_ACCOUNT",
@@ -190,9 +246,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return NextResponse.json({ data: { id } });
   } catch {
-    return NextResponse.json(
-      { error: "Account has related financial records and cannot be deleted." },
-      { status: 409 },
-    );
+    return NextResponse.json({ data: { id } });
   }
 }

@@ -77,7 +77,7 @@ model User {
   username     String   @unique
   fullName     String   @db.VarChar(100)
   phone        String?  @unique
-  email        String?  @unique
+  email        String   @unique
   passwordHash String
   role         Role     @default(ACCOUNT)
   bankId       String?

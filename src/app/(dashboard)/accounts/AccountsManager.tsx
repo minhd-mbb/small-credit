@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { usernameSchema } from "@/lib/validations";
 
 type Role = "ADMIN" | "BANK_ADMIN" | "ACCOUNT";
 
@@ -127,13 +128,20 @@ export function AccountsManager({
     setError("");
     setMessage("");
 
+    const parsedUsername = usernameSchema.safeParse(form.username);
+
+    if (!parsedUsername.success) {
+      setError("Email must be a valid email address.");
+      return;
+    }
+
     const url = isEditing ? `/api/accounts/${form.id}` : "/api/accounts";
     const method = isEditing ? "PATCH" : "POST";
     const response = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: form.username,
+        username: parsedUsername.data,
         fullName: form.fullName,
         role: canChooseRole ? form.role : "ACCOUNT",
         bankId: canChooseBank ? form.bankId : currentUser.bankId,
@@ -263,17 +271,20 @@ export function AccountsManager({
         <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr_0.85fr_0.85fr]">
           <label className="block">
             <span className="text-xs font-bold text-[var(--text-secondary)]">
-              Username
+              Email
             </span>
             <input
+              autoComplete="email"
               className="mt-2 h-10 w-full rounded-[var(--radius-btn)] border border-[var(--border-card)] px-3 text-sm font-semibold outline-none focus:border-[var(--primary)]"
-              inputMode="numeric"
-              maxLength={10}
+              inputMode="email"
+              maxLength={100}
+              placeholder="user@example.com"
+              type="email"
               value={form.username}
               onChange={(event) =>
                 setForm((value) => ({
                   ...value,
-                  username: event.target.value.replace(/\D/g, ""),
+                  username: event.target.value,
                 }))
               }
             />
@@ -482,7 +493,7 @@ export function AccountsManager({
           <thead>
             <tr className="border-b border-[var(--border)]">
               {[
-                "Username",
+                "Email",
                 "Full Name",
                 "Role",
                 "Bank",

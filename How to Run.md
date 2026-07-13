@@ -6,10 +6,10 @@ Dev server hiện có -> http://localhost:3000
 Bạn có thể mở:
 http://localhost:3001
 Tài khoản seed hiện còn giữ lại, mật khẩu mặc định:
-Admin:      0983171982 / 1234
-Bank admin: 0922076868 / 1234
-Account:    1505 / 1234
-Account:    1403 / 1234
+Admin:      minhd.mbb@gmail.com / <current password>
+Bank admin: giang.mbbank@gmail.com / <current password>
+Account:    benpoddle@gmail.com / <current password>
+Account:    bicorgi@gmail.com / <current password>
 Dữ liệu tiền, tiết kiệm, vay, chứng khoán và log đã được xóa/reset về 0, nên app đang ở trạng thái sạch để bắt đầu dùng thật.
 Các bước sử dụng thực tế
 Đảm bảo database chạy:

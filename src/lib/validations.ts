@@ -1,12 +1,30 @@
 import { z } from "zod";
 
-export const moneyAmountSchema = z.coerce.number().positive();
+const hasValidCurrencyPrecision = (value: number): boolean =>
+  Math.abs(value * 100 - Math.round(value * 100)) < 1e-8;
+
+export const moneyAmountSchema = z.coerce
+  .number()
+  .positive()
+  .refine(hasValidCurrencyPrecision, {
+    message: "Amount must have at most two decimal places.",
+  });
 export const transferAmountSchema = z.coerce
   .number()
   .positive()
-  .max(1_000_000_000);
+  .max(1_000_000_000)
+  .refine(hasValidCurrencyPrecision, {
+    message: "Amount must have at most two decimal places.",
+  });
 
-export const usernameSchema = z.string().regex(/^\d{4,10}$/);
+export const accountEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(100)
+  .email("Email must be a valid email address.");
+
+export const usernameSchema = accountEmailSchema;
 
 export const fullNameSchema = z.string().trim().min(1).max(100);
 
@@ -14,7 +32,7 @@ export const userRoleSchema = z.enum(["ADMIN", "BANK_ADMIN", "ACCOUNT"]);
 
 export const accountSchema = z.object({
   userId: z.string().min(1),
-  accountNo: z.string().min(3),
+  accountNo: accountEmailSchema,
   type: z.enum(["CHECKING", "SAVINGS", "LOAN", "PLEDGE"]),
 });
 
@@ -108,7 +126,7 @@ export const loanInterestPolicyUpdateSchema = loanInterestPolicyBaseSchema
   });
 
 export const loanCreateSchema = z.object({
-  recipientAccountNo: z.string().regex(/^\d+$/),
+  recipientAccountNo: accountEmailSchema,
   amount: transferAmountSchema,
   termMonths: z.coerce.number().int().positive(),
   note: z.string().trim().max(200).optional(),
@@ -130,12 +148,12 @@ export const fundTransactionSchema = z.object({
 });
 
 export const transferSchema = z.object({
-  recipientAccountNo: z.string().regex(/^\d+$/),
+  recipientAccountNo: accountEmailSchema,
   amount: transferAmountSchema,
 });
 
 export const depositSchema = z.object({
-  recipientAccountNo: z.string().regex(/^\d+$/),
+  recipientAccountNo: accountEmailSchema,
   amount: transferAmountSchema,
 });
 

@@ -11,7 +11,7 @@ export async function getServerSession() {
 
   const user = await prisma.user.findUnique({ where: { email }, include: { bank: true } });
 
-  if (!user) return null;
+  if (!user?.isActive) return null;
 
   return {
     user: {

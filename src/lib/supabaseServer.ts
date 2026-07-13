@@ -21,6 +21,17 @@ export function createSupabaseServerClientFromHeaders() {
   return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll: async () => (await cookies()).getAll(),
+      setAll: async (cookieItems) => {
+        const cookieStore = await cookies();
+
+        try {
+          for (const cookie of cookieItems) {
+            cookieStore.set(cookie.name, cookie.value, cookie.options);
+          }
+        } catch {
+          // Server Components cannot write cookies; proxy.ts refreshes them.
+        }
+      },
     },
   });
 }

@@ -2,8 +2,11 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { deriveSupabasePassword } from "@/lib/supabase-password";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import {
+  createSupabaseUser,
+  findSupabaseUserByEmail,
+  updateSupabaseUserPassword,
+} from "@/lib/supabase-user-admin";
 
 const loginSchema = z.object({
   email: z.email(),
@@ -19,7 +22,12 @@ export async function POST(request: Request) {
 
   const user = await prisma.user.findUnique({
     where: { email: payload.data.email },
-    select: { isActive: true, passwordHash: true },
+    select: {
+      isActive: true,
+      passwordHash: true,
+      fullName: true,
+      role: true,
+    },
   });
 
   if (!user || !user.isActive) {
@@ -35,26 +43,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  const { data: authUsers, error: listError } =
-    await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  const authUser = authUsers?.users.find(
-    (candidate) => candidate.email?.toLowerCase() === payload.data.email.toLowerCase(),
-  );
+  try {
+    const authUser = await findSupabaseUserByEmail(payload.data.email);
 
-  if (listError || !authUser) {
-    return NextResponse.json(
-      { error: "Authentication account is not configured" },
-      { status: 503 },
-    );
-  }
-
-  const supabasePassword = await deriveSupabasePassword(payload.data.password);
-  const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-    authUser.id,
-    { password: supabasePassword },
-  );
-
-  if (updateError) {
+    if (authUser) {
+      await updateSupabaseUserPassword(payload.data.email, payload.data.password);
+    } else {
+      await createSupabaseUser(payload.data.email, payload.data.password, {
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+      });
+    }
+  } catch {
     return NextResponse.json(
       { error: "Authentication account could not be synchronized" },
       { status: 503 },
